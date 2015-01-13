@@ -1,0 +1,27 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <title>{% block title %}zwiki{% endblock %}</title>
+        <meta name="description" content="{% block meta_description %}{% endblock %}">
+        <meta name="author" content="{% block meta_author %}{% endblock %}">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600"
+              rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="{% static 'pages/css/normalize.css' %}">
+        <link rel="stylesheet" href="{% static 'pagescss/skeleton.css' %}">
+
+
+    </head>
+    <body>
+        <article class="container">
+            <section class="row">
+                <div class="one-half column">
+                    {% block content %}{% endblock %}
+                </div>
+            </section>
+        </article>
+    </body>
+</html>
