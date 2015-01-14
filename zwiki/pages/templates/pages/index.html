@@ -2,9 +2,49 @@
 
 {% block meta_author %}{{ page.author.username }}{% endblock %}
 
+{% block title %}{{ page.title }}{% endblock %}
+
 {% block content %}
-<h1>{% block title %}{{ page.title }}{% endblock %}</h1>
+<div data-bind="template: { name: displayMode, data: $root }"></div>
+{% endblock %}
 
-{{ page.content }}
+{% block knockout_templates %}
+<script type="text/html" id="view">
+    <h1 data-bind="text: title"></h1>
 
+    <p data-bind="text: content, click: $root.editPage"></p>
+
+    <p><button data-bind="click: editPage">Edit this page</button</p>
+
+</script>
+<script type="text/html" id="edit">
+    <h1>Editing <span data-bind="text: title"></span></h1>
+    <p>Last edited: <span data-bind="text: datePublished"></span></p>
+    <form data-bind="submit: commitEdit">
+        <p>
+            <label for="title">Page title</label>
+            <input id="title" type="text"
+                data-bind="textInput: title"></input>
+        </p>
+
+        <p>
+            <label for="editSummary">Edit summary</label>
+            <input id="editSummary" type="text"
+                data-bind="textInput: editSummary"></input>
+
+        </p>
+
+        <p>
+            <label for="content">Page content</label>
+            <textarea id="content"
+                data-bind="textInput: content"></textarea>
+        </p>
+        <p>
+            <input type="button" data-bind="click: cancelEdit"
+                value="Cancel"/>
+            <input type="submit" class="button-primary"
+                value="Save edit"/>
+        </p>
+    </form>
+</script>
 {% endblock %}
