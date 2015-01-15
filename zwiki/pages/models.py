@@ -1,5 +1,8 @@
+import base64
 from datetime import datetime, timedelta, timezone
 import json
+
+from docutils.core import publish_string
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -25,6 +28,7 @@ class Page(Sluggable):
     date_published = models.DateTimeField(auto_now_add=True)
     edit_summary = models.TextField()
     content = models.TextField()
+    html = models.TextField()
     public = models.BooleanField(default=False)
     author = models.ForeignKey(User)
     categories = models.ManyToManyField('Category', related_name='pages',
@@ -32,20 +36,6 @@ class Page(Sluggable):
 
     def __str__(self):
         return self.title
-
-    def to_json(self):
-        """Output a JSON representation of the page object suitable to hand off
-        to a Knockout viewmodel.
-
-        """
-        page_json = json.dumps({
-            'slug': self.slug,
-            'title': self.title,
-            'editSummary': self.edit_summary,
-            'datePublished': str(self.date_published),
-            'content': self.content,
-        })
-        return page_json
 
     def lock(self, user):
         self.lock_state = self.LOCKED
@@ -58,6 +48,25 @@ class Page(Sluggable):
         self.lock_time = None
         self.lock_owner = None
         self.save()
+
+    def save(self, *args, **kwargs):
+        # Process the user-inputted RST when we save
+        self.generate_rst()
+        super(Page, self).save(*args, **kwargs)
+
+    def generate_rst(self):
+        """Convenience function to render RST from Page.content into Page.html
+
+        """
+        defaults = {
+            'file_insertion_enabled': 0,
+            'raw_enabled': 0,
+            '_disable_config': 1,
+        }
+        self.html = publish_string(self.content,
+                                   writer_name='html',
+                                   settings_overrides=defaults)
+        return self.html
 
     def lock_is_fresh(self):
         if datetime.now(timezone.utc) <= self.lock_time + timedelta(hours=2):
@@ -72,16 +81,17 @@ class Page(Sluggable):
         )
 
 
-class PageHistory(Sluggable):
+class PageHistory(models.Model):
     """A specific past revision of a page in the wiki."""
+    title = models.TextField(max_length=255)
     date_published = models.DateTimeField(auto_now_add=True)
     edit_summary = models.TextField()
     content = models.TextField()
+    html = models.TextField()
     public = models.BooleanField(default=False)
     author = models.ForeignKey(User)
-    page = models.ForeignKey(Page)
+    page = models.ForeignKey(Page, related_name='page_history')
     categories = models.ManyToManyField('Category',
-                                        related_name='page_histories',
                                         null=True, blank=True)
 
     def __str__(self):

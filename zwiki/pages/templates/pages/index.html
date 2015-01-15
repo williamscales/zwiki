@@ -2,42 +2,51 @@
 
 {% block meta_author %}{{ page.author.username }}{% endblock %}
 
-{% block title %}{{ page.title }}{% endblock %}
-
 {% block content %}
-<div data-bind="template: { name: displayMode, data: $root }"></div>
+<section id="page" data-bind="template: { name: displayMode }"></section>
+<section id="page_history" data-bind="template: { name: displayMode }"></section>
+{% endblock %}
+
+{% block sidebar %}
+<div id="sidebar">
+    <h5>Tools</h5>
+    <ul>
+        <li id="edit_page_link"><a href="" data-bind="click: editPage">
+                Edit this page</a></li>
+        <li id="view_history_link"><a href="" data-bind="click: viewHistory">
+                View edit history</a></li>
+        <li id="view_page_link" style="display: none;"><a href="" data-bind="click: hideHistory">
+                View page</a></li>
+    </ul>
+</div>
 {% endblock %}
 
 {% block knockout_templates %}
 <script type="text/html" id="view">
     <h1 data-bind="text: title"></h1>
 
-    <p data-bind="text: content, click: $root.editPage"></p>
-
-    <p><button data-bind="click: editPage">Edit this page</button</p>
-
+    <div data-bind="html: html, click: editPage"></div>
 </script>
 <script type="text/html" id="edit">
     <h1>Editing <span data-bind="text: title"></span></h1>
-    <p>Last edited: <span data-bind="text: datePublished"></span></p>
+    <p>Last edited: <span data-bind="text: date_published"></span></p>
     <form data-bind="submit: commitEdit">
         <p>
             <label for="title">Page title</label>
-            <input id="title" type="text"
+            <input id="title" type="text" class="u-full-width"
                 data-bind="textInput: title"></input>
         </p>
-
         <p>
-            <label for="editSummary">Edit summary</label>
-            <input id="editSummary" type="text"
-                data-bind="textInput: editSummary"></input>
-
-        </p>
-
-        <p>
-            <label for="content">Page content</label>
-            <textarea id="content"
+            <textarea id="content" class="u-full-width" rows="25",
+                placeholder="Write the page content here"
                 data-bind="textInput: content"></textarea>
+        </p>
+        <p>
+            <label for="edit_summary">Edit summary</label>
+            <input id="edit_summary" type="text" class="u-full-width"
+                placeholder="Briefly summarize any changes to the page"
+                data-bind="textInput: edit_summary"></input>
+
         </p>
         <p>
             <input type="button" data-bind="click: cancelEdit"
@@ -47,4 +56,24 @@
         </p>
     </form>
 </script>
+<script type="text/html" id="history">
+    <h1>History for "<span data-bind="text: currentTitle"></span>"</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Date Published</th>
+                <th>Edit Summary</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: history">
+            <tr>
+                <td><span data-bind="text: title"></span></td>
+                <td><span data-bind="text: date_published"></span></td>
+                <td><span data-bind="text: edit_summary"></span></td>
+            </tr>
+        </tbody>
+    </table>
+</script>
+<script type="text/html" id="hidden"></script>
 {% endblock %}
